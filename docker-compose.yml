@@ -1,0 +1,33 @@
+networks:
+  network-dimdim-563665:
+    driver: bridge
+
+volumes:
+  vol-mysql-563665:
+    driver: local
+
+services:
+  db-mysql-563665:
+    image: mysql:8.0
+    container_name: db-mysql-563665
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dimdim_db
+    volumes:
+      - vol-mysql-563665:/var/lib/mysql
+    networks:
+      - network-dimdim-563665
+
+  app-dimdim-563665:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-dimdim-563665
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db-mysql-563665
+    networks:
+      - network-dimdim-563665
