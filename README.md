@@ -99,5 +99,5 @@ Rede: Os containers estão isolados em uma rede bridge dedicada (cp3_devops_netw
 
 
 Integrantes
-João Victor Vendrameto - 563665 2TDSPV
-Gabriel Ambrósio Saraiva 566552 - 2TDSPV
+João Victor Vendrameto - 563665 - 2TDSPV
+Gabriel Ambrósio Saraiva - 566552 - 2TDSPV
