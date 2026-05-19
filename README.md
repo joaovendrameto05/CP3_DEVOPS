@@ -1,97 +1,103 @@
 *Projeto DimDimApp - Checkpoint 3 DevOps*
 
-*Este projeto consiste na implementação de um ambiente conteinerizado para a aplicação "DimDim", atendendo aos requisitos de automação, isolamento e persistência de dados. A solução foi implantada em ambiente de nuvem (Microsoft Azure), utilizando Docker e Docker Compose.*
+- *1. Descrição do Projeto*
+  
+Este projeto compreende o desenvolvimento e a implantação de uma aplicação financeira denominada "DimDimApp". O sistema foi estruturado para atender aos requisitos de automação, isolamento de ambiente e persistência de dados. A arquitetura é baseada em microsserviços conteinerizados, composta por uma aplicação Java (Spring Boot) e um banco de dados relacional (MySQL), orquestrados via Docker Compose em ambiente de nuvem (Microsoft Azure).
 
 
--------------------------------------------------------------||-------------------------------------------------------------
+-------------------------------------------------------------------------------------|||-------------------------------------------------------------------------------------
 
 
-*1. Requisitos Técnicos Atendidos*
+- *2. Tecnologias Utilizadas*
 
-O projeto atende aos seguintes requisitos obrigatórios solicitados:
-Arquitetura de Containers: Implementação de dois containers distintos; um para a aplicação Spring Boot (com Dockerfile personalizado) e outro para o banco de dados MySQL (imagem oficial).
-Persistência de Dados: Configuração de Volume Nomeado para garantir a persistência dos dados do banco de dados.
-Segurança: A aplicação Java é executada utilizando um usuário não-root (jv-user), seguindo as melhores práticas de isolamento e segurança.
-Rede: Os containers operam na mesma rede Docker (cp3_devops_network), garantindo a comunicação interna entre a aplicação e o banco.
-Automação: O ambiente é orquestrado através do Docker Compose, permitindo a subida de todo o ecossistema com um único comando.
-
-
--------------------------------------------------------------||-------------------------------------------------------------
-
-- Document
+Linguagem: Java (Spring Boot 3.2.5).
+Banco de Dados: MySQL 8.0.
+Orquestração: Docker Compose.
+Infraestrutura: Microsoft Azure (Máquina Virtual Ubuntu).
+Versionamento: Git e GitHub.
+Segurança: Execução de containers com usuário não-privilegiado (non-root).
 
 
-*2. Instruções de Execução (How To)*
-Para rodar o projeto na máquina virtual (Azure), siga os passos abaixo a partir do terminal de acesso à VM:
+-------------------------------------------------------------------------------------|||-------------------------------------------------------------------------------------
 
-- Passo 1: Clonar o repositório
-Acesse o diretório de sua preferência e clone o código fonte:
+
+- *3. Estrutura do Repositório*
+O repositório está organizado conforme padrões de desenvolvimento:
+
+/src: Código-fonte da aplicação Java.
+/Dockerfile: Instruções para build da imagem personalizada da aplicação.
+/docker-compose.yml: Orquestração dos serviços (App e Banco) e configuração de volumes/redes.
+/pom.xml: Gerenciador de dependências Maven.
+
+
+-------------------------------------------------------------------------------------|||-------------------------------------------------------------------------------------
+
+
+- *4. Guia de Execução*
+Siga os passos abaixo para implantar a solução no ambiente de nuvem:
+
+- Pré-requisitos
+Acesso via SSH à máquina virtual Ubuntu.
+Docker e Docker Compose instalados no ambiente de destino.
+Acesso de rede configurado para permitir tráfego na porta 8080.
+
+- Passo 1: Clonagem do Repositório
+Acesse o terminal da máquina virtual e execute os comandos:
 
 Bash
 git clone https://github.com/joaovendrameto05/CP3_DEVOPS.git
 cd CP3_DEVOPS
 
-- Passo 2: Executar o ambiente
-Utilize o Docker Compose para realizar o build da imagem personalizada e subir os serviços em background:
+- Passo 2: Inicialização dos Containers
+Suba os serviços definidos no Docker Compose em modo background:
 
 Bash
 sudo docker compose up -d --build
 
-- Passo 3: Aguardar inicialização
-Aguarde aproximadamente 30 segundos para que o banco de dados MySQL finalize a criação das tabelas e a aplicação Java estabeleça a conexão com o banco.
-
-
--------------------------------------------------------------||-------------------------------------------------------------
-
-
-*3. Testes e Validação*
-Para validar o funcionamento da aplicação, utilize os comandos abaixo no terminal da VM:
-Validação de Segurança (Usuário Não-Root)
-Verifique se a aplicação está rodando com o usuário jv-user:
-
+-Passo 3: Validação da Aplicação
+Aguarde a inicialização dos serviços (aproximadamente 30 segundos) e valide a operação:
+- A. Verificação de Segurança (Usuário Não-Root)
+O container deve estar executando com o usuário definido no Dockerfile (jv-user):
 Bash
 sudo docker container exec app-dimdim-563665 whoami
-Verifique o diretório de trabalho:
 
-Bash
-sudo docker container exec app-dimdim-563665 pwd
-Validação do CRUD (API REST)
-Para testar a criação de um novo lançamento (POST):
-
+- B. Operações de CRUD (Testes de API)
+- Para registrar um novo lançamento (POST):
 Bash
 curl -X POST http://localhost:8080/lancamentos \
 -H "Content-Type: application/json" \
 -d '{"descricao": "Teste CP3 Fiap", "valor": 1000.00}'
-Para consultar os lançamentos salvos (GET):
 
+- Para listar os registros (GET):
 Bash
 curl -X GET http://localhost:8080/lancamentos
-Validação de Persistência
-Para provar que os dados são persistidos via Volume Nomeado:
 
-- Derrube o ambiente: sudo docker compose down
-Suba o ambiente novamente: sudo docker compose up -d
-Execute o curl de GET novamente. Os dados deverão retornar, comprovando a eficácia do volume.
+- C. Validação de Persistência (Volume Nomeado)
+Para garantir que os dados não são perdidos com a reinicialização dos containers:
 
-*Validação Direta no Banco de Dados*
-Para verificar o registro diretamente na tabela do MySQL:
+Derrube o ambiente: sudo docker compose down
+Suba o ambiente: sudo docker compose up -d
+Consulte novamente: curl -X GET http://localhost:8080/lancamentos
+O dado inserido deve persistir, validando o uso de Volumes Nomeados.
 
+- D. Validação Direta no Banco de Dados
+Para consultar diretamente a tabela no banco MySQL:
 Bash
 sudo docker container exec -it db-mysql-563665 mysql -uroot -proot dimdim_db -e "SELECT * FROM lancamento;"
 
 
--------------------------------------------------------------||-------------------------------------------------------------
+-------------------------------------------------------------------------------------|||-------------------------------------------------------------------------------------
 
 
-- 4. Notas Técnicas
-*A imagem da aplicação é personalizada via Dockerfile, utilizando a imagem eclipse-temurin:21-jdk para o runtime.*
-*O arquivo docker-compose.yml define as dependências entre os serviços e a rede dedicada.*
-*A persistência de dados ocorre através de volumes gerenciados pelo Docker, garantindo que o ciclo de vida dos containers não apague as informações do banco.*
+- 5. Considerações de Implantação
+Segurança: A aplicação foi configurada para ser executada com o usuário jv-user, seguindo o princípio do privilégio mínimo dentro do ambiente conteinerizado.
 
--------------------------------------------------------------||-------------------------------------------------------------
+Persistência: Foi utilizado um volume nomeado (vol-mysql-563665) para mapear o diretório de dados do MySQL (/var/lib/mysql), garantindo a integridade dos dados mesmo em caso de falha ou recriação dos containers.
+Rede: Os containers estão isolados em uma rede bridge dedicada (cp3_devops_network), permitindo que a aplicação se comunique com o banco apenas através do nome do serviço.
+
+-------------------------------------------------------------------------------------|||-------------------------------------------------------------------------------------
 
 
-Integrantes 
-João Victor Vendrameto - rm 563665
-Gabriel Ambrósio Saraiva - 566552
-
+Integrantes
+João Victor Vendrameto - 563665 2TDSPV
+Gabriel Ambrósio Saraiva 566552 - 2TDSPV
